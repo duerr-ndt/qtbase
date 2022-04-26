@@ -197,7 +197,7 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     if (debugLayer)
         devFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
-    dxgiFactory = createDXGIFactory2();
+    dxgiFactory = nullptr;
     if (dxgiFactory != nullptr) {
         supportsFlipSwapchain = !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
     } else {
