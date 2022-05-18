@@ -200,17 +200,19 @@ void QWindowsUser32DLL::init()
     getDisplayAutoRotationPreferences = (GetDisplayAutoRotationPreferences)library.resolve("GetDisplayAutoRotationPreferences");
     setDisplayAutoRotationPreferences = (SetDisplayAutoRotationPreferences)library.resolve("SetDisplayAutoRotationPreferences");
 
-    enableMouseInPointer = (EnableMouseInPointer)library.resolve("EnableMouseInPointer");
-    getPointerType = (GetPointerType)library.resolve("GetPointerType");
-    getPointerInfo = (GetPointerInfo)library.resolve("GetPointerInfo");
-    getPointerDeviceRects = (GetPointerDeviceRects)library.resolve("GetPointerDeviceRects");
-    getPointerTouchInfo = (GetPointerTouchInfo)library.resolve("GetPointerTouchInfo");
-    getPointerFrameTouchInfo = (GetPointerFrameTouchInfo)library.resolve("GetPointerFrameTouchInfo");
-    getPointerFrameTouchInfoHistory = (GetPointerFrameTouchInfoHistory)library.resolve("GetPointerFrameTouchInfoHistory");
-    getPointerPenInfo = (GetPointerPenInfo)library.resolve("GetPointerPenInfo");
-    getPointerPenInfoHistory = (GetPointerPenInfoHistory)library.resolve("GetPointerPenInfoHistory");
-    skipPointerFrameMessages = (SkipPointerFrameMessages)library.resolve("SkipPointerFrameMessages");
-
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows8) {
+        enableMouseInPointer = (EnableMouseInPointer)library.resolve("EnableMouseInPointer");
+        getPointerType = (GetPointerType)library.resolve("GetPointerType");
+        getPointerInfo = (GetPointerInfo)library.resolve("GetPointerInfo");
+        getPointerDeviceRects = (GetPointerDeviceRects)library.resolve("GetPointerDeviceRects");
+        getPointerTouchInfo = (GetPointerTouchInfo)library.resolve("GetPointerTouchInfo");
+        getPointerFrameTouchInfo = (GetPointerFrameTouchInfo)library.resolve("GetPointerFrameTouchInfo");
+        getPointerFrameTouchInfoHistory = (GetPointerFrameTouchInfoHistory)library.resolve("GetPointerFrameTouchInfoHistory");
+        getPointerPenInfo = (GetPointerPenInfo)library.resolve("GetPointerPenInfo");
+        getPointerPenInfoHistory = (GetPointerPenInfoHistory)library.resolve("GetPointerPenInfoHistory");
+        skipPointerFrameMessages = (SkipPointerFrameMessages)library.resolve("SkipPointerFrameMessages");
+    }
+    
     if (QOperatingSystemVersion::current()
         >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 14393)) {
         adjustWindowRectExForDpi = (AdjustWindowRectExForDpi)library.resolve("AdjustWindowRectExForDpi");
@@ -232,6 +234,8 @@ bool QWindowsUser32DLL::supportsPointerApi()
 
 void QWindowsShcoreDLL::init()
 {
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8_1)
+        return;
     QSystemLibrary library(QStringLiteral("SHCore"));
     getProcessDpiAwareness = (GetProcessDpiAwareness)library.resolve("GetProcessDpiAwareness");
     setProcessDpiAwareness = (SetProcessDpiAwareness)library.resolve("SetProcessDpiAwareness");
@@ -399,6 +403,9 @@ bool QWindowsContext::disposeTablet()
 bool QWindowsContext::initPointer(unsigned integrationOptions)
 {
     if (integrationOptions & QWindowsIntegration::DontUseWMPointer)
+        return false;
+
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8)
         return false;
 
     if (!QWindowsContext::user32dll.supportsPointerApi())
